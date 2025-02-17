@@ -6,7 +6,7 @@ A simple bot that records all times set on an ACC dedicated server.
 
 You must have your servers running on **Assetto Corsa Competizione Server Manager v1.3.0 or greater**.
 
-Setup `.env` as shown in `db.example`.
+Setup `.env` as shown in `.env.example`.
 
 Rename `db.example.json` to `db.json`
 
