@@ -14,11 +14,11 @@ intents = discord.Intents.default()
 
 load_dotenv()
 
-guild_id = os.get_env("GUILD_ID")
+guild_id = os.getenv("GUILD_ID")
 
 
 class Tracks(Enum):
-    Barcelona = "Barcelona"
+    barcelona = "Barcelona"
     brands_hatch = "Brands Hatch"
     cota = "Circuit of the Americas"
     donington = "Donington"
@@ -224,10 +224,12 @@ async def times(interaction: discord.Interaction, track: Tracks):
     track="Enter the track name",
     name="Enter the name of the driver",
 )
-@discord.app_commands.permissions(
-    discord.Permissions(administrator=True),
-)
 async def delete(interaction: discord.Interaction, track: Tracks, name: str):
+    if not interaction.user.guild_permissions.administrator:
+        return await interaction.response.send_message(
+            "You must have admin permissions to run this command", ephemeral=True
+        )
+
     best_times = bot.database.get(track.name, {}).get("best_times", {})
 
     if not best_times.get(name):
