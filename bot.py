@@ -125,7 +125,7 @@ class DiscordBot(commands.Bot):
                 ) as response:
                     return await response.json()
 
-    @tasks.loop(seconds=10.0)
+    @tasks.loop(minutes=5.0)
     async def status_task(self) -> None:
         results = await self.get_results()
 
