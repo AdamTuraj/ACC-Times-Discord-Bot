@@ -1,6 +1,5 @@
 import json
 import os
-import platform
 
 from enum import Enum
 
@@ -16,6 +15,34 @@ intents = discord.Intents.default()
 load_dotenv()
 
 guild_id = os.get_env("GUILD_ID")
+
+
+class Tracks(Enum):
+    Barcelona = "Barcelona"
+    brands_hatch = "Brands Hatch"
+    cota = "Circuit of the Americas"
+    donington = "Donington"
+    hungaroring = "Hungaroring"
+    imola = "Imola"
+    indianapolis = "Indianapolis"
+    kyalami = "Kyalami"
+    laguna_seca = "Laguna Seca"
+    misano = "Misano"
+    monza = "Monza"
+    mount_panorama = "Mount Panorama"
+    nurburgring = "Nurburgring"
+    nurburgring_24h = "Nordschleife"
+    oulton_park = "Oulton Park"
+    paul_ricard = "Paul Ricard"
+    red_bull_ring = "Red Bull Ring"
+    silverstone = "Silverstone"
+    snetterton = "Snetterton"
+    spa = "Spa"
+    suzuka = "Suzuka"
+    valencia = "Valencia"
+    watkins_glen = "Watkins Glen"
+    zandvoort = "Zandvoort"
+    zolder = "Zolder"
 
 
 car_types = [
@@ -145,34 +172,6 @@ class DiscordBot(commands.Bot):
 
 
 bot = DiscordBot()
-
-
-class Tracks(Enum):
-    Barcelona = "Barcelona"
-    brands_hatch = "Brands Hatch"
-    cota = "Circuit of the Americas"
-    donington = "Donington"
-    hungaroring = "Hungaroring"
-    imola = "Imola"
-    indianapolis = "Indianapolis"
-    kyalami = "Kyalami"
-    laguna_seca = "Laguna Seca"
-    misano = "Misano"
-    monza = "Monza"
-    mount_panorama = "Mount Panorama"
-    nurburgring = "Nurburgring"
-    nurburgring_24h = "Nordschleife"
-    oulton_park = "Oulton Park"
-    paul_ricard = "Paul Ricard"
-    red_bull_ring = "Red Bull Ring"
-    silverstone = "Silverstone"
-    snetterton = "Snetterton"
-    spa = "Spa"
-    suzuka = "Suzuka"
-    valencia = "Valencia"
-    watkins_glen = "Watkins Glen"
-    zandvoort = "Zandvoort"
-    zolder = "Zolder"
 
 
 def format_time(time: int) -> str:
