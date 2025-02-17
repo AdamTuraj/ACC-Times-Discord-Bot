@@ -194,7 +194,7 @@ async def times(interaction: discord.Interaction, track: Tracks):
     best_times = bot.database.get(track.name, {}).get("best_times", {})
 
     sorted_best_times = sorted(
-        best_times.items(), key=lambda x: x[1]["bestTime"], reverse=True
+        best_times.items(), key=lambda x: x[1]["bestTime"], reverse=False
     )
 
     if len(sorted_best_times) == 0:
