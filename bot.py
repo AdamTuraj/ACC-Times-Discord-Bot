@@ -125,7 +125,7 @@ class DiscordBot(commands.Bot):
                 ) as response:
                     return await response.json()
 
-    @tasks.loop(minutes=5.0)
+    @tasks.loop(minutes=1.0)
     async def status_task(self) -> None:
         results = await self.get_results()
 
@@ -151,7 +151,12 @@ class DiscordBot(commands.Bot):
         best_times = self.database[track_name]["best_times"]
 
         for name, result in serialized_results.items():
-            if best_times.get(name, {}).get("best_time", 0) < result["bestTime"]:
+            best_time = best_times.get(name, {}).get("best_time", 0)
+            if (
+                best_time < result["bestTime"]
+                and best_time > 60000
+                and best_time < 1200000
+            ):
                 best_times[name] = result
 
         self.database[track_name]["recorded_sessions"].append(results["Date"])
@@ -203,12 +208,19 @@ async def times(interaction: discord.Interaction, track: Tracks):
 
     embed = discord.Embed(title=f"Best times for {track.value}", color=0x00FF00)
 
+    best_time = sorted_best_times[0][1]["bestTime"]
+
     for index, (name, result) in enumerate(sorted_best_times):
         splits = [split / 1000 for split in result["bestSplits"]]
 
+        delta_text = ""
+
+        if index != 0:
+            delta_text = f"(+{round((result['bestTime'] - best_time) / 1000, 3)}s)"
+
         embed.add_field(
             name=f"{index + 1}. {name}",
-            value=f"**Car:** {result['car']}\n**Time:** {format_time(result['bestTime'])}\n**Splits:** {' | '.join([str(split) for split in splits])}",
+            value=f"**Car:** {result['car']}\n**Time:** {format_time(result['bestTime'])} {delta_text}\n**Splits:** {' | '.join([str(split) for split in splits])}",
             inline=False,
         )
 
