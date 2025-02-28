@@ -154,7 +154,7 @@ class Timing(commands.Cog):
             content=f"Syncing times, please wait. Estimated time: {time_to_fetch+20} seconds."
         )
 
-        # await asyncio.sleep(20)
+        await asyncio.sleep(20)
 
         temp_db = {}
 
