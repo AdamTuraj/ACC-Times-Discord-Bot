@@ -3,3 +3,5 @@ db.json
 .env
 .venv
 .vscode
+
+__pycache__
