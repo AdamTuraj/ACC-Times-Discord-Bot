@@ -154,7 +154,7 @@ class Timing(commands.Cog):
             content=f"Syncing times, please wait. Estimated time: {time_to_fetch+20} seconds."
         )
 
-        await asyncio.sleep(20)
+        # await asyncio.sleep(20)
 
         temp_db = {}
 
@@ -172,7 +172,7 @@ class Timing(commands.Cog):
                 bestLap = data["bestLap"]
 
                 if (
-                    result_data.get(driver_id, {"bestLap": 0})["bestLap"] > bestLap
+                    result_data.get(driver_id, {"bestLap": 900000})["bestLap"] > bestLap
                     and bestLap > 60000
                     and bestLap < 900000
                 ):
