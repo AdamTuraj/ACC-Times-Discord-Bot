@@ -1,9 +1,11 @@
-import os
 import io
 
 import json
 
+import os
 import asyncio
+
+from datetime import datetime
 
 import discord
 from discord import app_commands
@@ -11,8 +13,9 @@ from discord.ext import commands, tasks
 
 import math
 
-from utils.Types import Tracks, car_types
+from utils.Types import Tracks
 from utils.ACCServer import format_data, get_result, get_results_list, get_page
+from utils.ImageHandler import format_data as format_data_image, gen_image
 
 
 def format_time(time: int) -> str:
@@ -56,36 +59,14 @@ class Timing(commands.Cog):
         track="Enter the track name",
     )
     async def times(self, interaction: discord.Interaction, track: Tracks):
+        data = format_data_image(self.bot.database[track.name])
 
-        best_times = self.bot.database.get(track.name, {})
+        image = gen_image(data)
 
-        sorted_best_times = sorted(
-            best_times.values(), key=lambda x: x["bestLap"], reverse=False
+        await interaction.response.send_message(
+            f"Here are the best times for {Tracks[track.name].value}!",
+            file=discord.File(filename=f"{track.name}.png", fp=image),
         )
-
-        if len(sorted_best_times) == 0:
-            await interaction.response.send_message("No times found")
-            return
-
-        embed = discord.Embed(title=f"Best times for {track.value}", color=0x00FF00)
-
-        best_time = sorted_best_times[0]["bestLap"]
-
-        for index, result in enumerate(sorted_best_times):
-            splits = [split / 1000 for split in result["bestSplits"]]
-
-            delta_text = ""
-
-            if index != 0:
-                delta_text = f"(+{round((result['bestLap'] - best_time) / 1000, 3)}s)"
-
-            embed.add_field(
-                name=f"{index + 1}. {result['name']}",
-                value=f"**Car:** {car_types[result['car']]}\n**Time:** {format_time(result['bestLap'])} {delta_text}\n**Splits:** {' | '.join([str(split) for split in splits])}",
-                inline=False,
-            )
-
-        await interaction.response.send_message(embed=embed)
 
     @app_commands.command(
         description="Deletes a time",
@@ -131,7 +112,10 @@ class Timing(commands.Cog):
         name="sync",
         description="Manually syncs all the times",
     )
-    async def sync(self, interaction: discord.Interaction):
+    @app_commands.describe(
+        from_date="Enter a date to sync from. Use the format MM-DD-YYYY",
+    )
+    async def sync(self, interaction: discord.Interaction, from_date: str = ""):
         if (
             not interaction.user.guild_permissions.administrator
             and interaction.user.id != int(os.getenv("OWNER_ID"))
@@ -148,21 +132,32 @@ class Timing(commands.Cog):
 
         results_list = await get_results_list()
 
-        time_to_fetch = math.floor(len(results_list) / 5) * 20
+        time_to_fetch = math.floor(len(results_list) / 4) * 20
 
         await interaction.edit_original_response(
             content=f"Syncing times, please wait. Estimated time: {time_to_fetch+20} seconds."
         )
 
+        from_date = datetime.strptime(from_date, "%m-%d-%Y")
+
         await asyncio.sleep(20)
 
         temp_db = {}
 
+        rate_limit_counter = 0
+
         for i, result_url in enumerate(results_list, 1):
-            if (i % 5) == 0:
+            if rate_limit_counter == 4:
                 await asyncio.sleep(20)
+                rate_limit_counter = 0
 
             result = await get_result(result_url["results_json_url"])
+
+            if from_date:
+                result_date = datetime.strptime(result["Date"], "%Y-%m-%dT%H:%M:%SZ")
+
+                if result_date < from_date:
+                    break
 
             track_name = result["trackName"]
 
@@ -181,8 +176,10 @@ class Timing(commands.Cog):
             temp_db[track_name] = result_data
 
             await interaction.edit_original_response(
-                content=f"Syncing times, please wait. Estimated time: {time_to_fetch - math.floor(i / 5)*20} seconds. Progress: {i} of {len(results_list)} entries."
+                content=f"Syncing times, please wait. Estimated time: {time_to_fetch - math.floor(i / 4)*20} seconds. Progress: {i} of {len(results_list)} entries."
             )
+
+            rate_limit_counter += 1
 
         buttons = Confirm()
 
@@ -199,6 +196,8 @@ class Timing(commands.Cog):
 
         await buttons.wait()
 
+        await interaction.edit_original_response(view=None)
+
         if buttons.value is None:
             await interaction.edit_original_response(
                 content="Timed out...Database not updated"
@@ -208,7 +207,7 @@ class Timing(commands.Cog):
             self.bot.database = temp_db
             json.dump(self.bot.database, open("db.json", "w+"), indent=4)
 
-        self.sync_loop.start()
+        self.sync_loop.restart()
 
     @app_commands.command(
         name="reset_loop",
@@ -223,7 +222,7 @@ class Timing(commands.Cog):
         self.sync_loop.restart()
         await interaction.response.send_message("Loop restarted")
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=2)
     async def sync_loop(self):
         results_url = await get_page()
         results = await get_result(results_url["results"][0]["results_json_url"])

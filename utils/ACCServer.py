@@ -40,20 +40,33 @@ async def get_results_list() -> dict:
 
             # To prevent rate limiting
             if page_num % 5 == 0:
-                await asyncio.sleep(20)
+                await asyncio.sleep(25)
 
     return results_list
 
 
 def format_data(result):
-    return {
-        driver["currentDriver"]["playerId"]: {
+    data = {}
+
+    for driver in result["sessionResult"]["leaderBoardLines"]:
+        best_splits = []
+
+        best_splits = next(
+            (
+                lap["splits"]
+                for lap in result["laps"]
+                if lap["laptime"] == driver["timing"]["bestLap"]
+            ),
+            None,
+        )
+
+        data[driver["currentDriver"]["playerId"]] = {
             "bestLap": driver["timing"]["bestLap"],
-            "bestSplits": driver["timing"]["bestSplits"],
+            "bestSplits": best_splits,
             "car": driver["car"]["carModel"],
             "name": driver["currentDriver"]["firstName"]
             + " "
             + driver["currentDriver"]["lastName"],
         }
-        for driver in result["sessionResult"]["leaderBoardLines"]
-    }
+
+    return data
