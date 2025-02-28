@@ -140,8 +140,10 @@ class Timing(commands.Cog):
                 "You must have admin permissions to run this command", ephemeral=True
             )
 
+        self.sync_loop.stop()
+
         await interaction.response.send_message(
-            "Syncing times, please wait.", ephemeral=True
+            "Syncing times, please wait.", ephemeral=False
         )
 
         results_list = await get_results_list()
@@ -205,6 +207,8 @@ class Timing(commands.Cog):
         if buttons.value:
             self.bot.database = temp_db
             json.dump(self.bot.database, open("db.json", "w+"), indent=4)
+
+        self.sync_loop.start()
 
     @app_commands.command(
         name="reset_loop",
