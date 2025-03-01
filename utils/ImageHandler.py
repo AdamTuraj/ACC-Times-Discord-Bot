@@ -36,9 +36,9 @@ def format_data(data):
             pos,
             driver["name"],
             car_types[driver["car"]],
-            f"{driver['bestSplits'][0] / 1000:.3f}",
-            f"{driver['bestSplits'][1] / 1000:.3f}",
-            f"{driver['bestSplits'][2] / 1000:.3f}",
+            f"{driver['bestLapSplits'][0] / 1000:.3f}",
+            f"{driver['bestLapSplits'][1] / 1000:.3f}",
+            f"{driver['bestLapSplits'][2] / 1000:.3f}",
             format_time(driver["bestLap"]),
             format_time(sum(driver["bestSplits"])),
             f"{(driver['bestLap'] - fastest_time) / 1000:.3f}",
@@ -64,7 +64,7 @@ def gen_image(data):
     ax.axis("tight")
     ax.axis("off")
 
-    col_widths = [0.05, 0.16, 0.22, 0.08, 0.08, 0.08, 0.12, 0.13, 0.05]
+    col_widths = [0.05, 0.2, 0.22, 0.08, 0.08, 0.08, 0.12, 0.13, 0.05]
 
     table = ax.table(
         cellText=df.values,

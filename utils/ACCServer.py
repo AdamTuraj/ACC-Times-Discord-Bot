@@ -49,9 +49,7 @@ def format_data(result):
     data = {}
 
     for driver in result["sessionResult"]["leaderBoardLines"]:
-        best_splits = []
-
-        best_splits = next(
+        best_lap_splits = next(
             (
                 lap["splits"]
                 for lap in result["laps"]
@@ -62,7 +60,8 @@ def format_data(result):
 
         data[driver["currentDriver"]["playerId"]] = {
             "bestLap": driver["timing"]["bestLap"],
-            "bestSplits": best_splits,
+            "bestLapSplits": best_lap_splits,
+            "bestSplits": driver["timing"]["bestSplits"],
             "car": driver["car"]["carModel"],
             "name": driver["currentDriver"]["firstName"]
             + " "

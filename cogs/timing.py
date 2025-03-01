@@ -166,12 +166,21 @@ class Timing(commands.Cog):
             for driver_id, data in format_data(result).items():
                 bestLap = data["bestLap"]
 
+                old_data = result_data.get(
+                    driver_id,
+                    {"bestLap": 900000, "bestSplits": [1000000, 1000000, 1000000]},
+                )
+
                 if (
-                    result_data.get(driver_id, {"bestLap": 900000})["bestLap"] > bestLap
+                    old_data["bestLap"] > bestLap
                     and bestLap > 60000
                     and bestLap < 900000
                 ):
                     result_data[driver_id] = data
+
+                for i in range(3):
+                    if data["bestSplits"][i] < old_data["bestSplits"][i]:
+                        result_data[driver_id]["bestSplits"][i] = data["bestSplits"][i]
 
             temp_db[track_name] = result_data
 
@@ -235,12 +244,17 @@ class Timing(commands.Cog):
         for driver_id, data in format_data(results).items():
             bestLap = data["bestLap"]
 
-            if (
-                temp_db.get(driver_id, {"bestLap": 900000})["bestLap"] > bestLap
-                and bestLap > 60000
-                and bestLap < 900000
-            ):
+            old_data = temp_db.get(
+                driver_id,
+                {"bestLap": 900000, "bestSplits": [1000000, 1000000, 1000000]},
+            )
+
+            if old_data["bestLap"] > bestLap and bestLap > 60000 and bestLap < 900000:
                 temp_db[driver_id] = data
+
+            for i in range(3):
+                if data["bestSplits"][i] < old_data["bestSplits"][i]:
+                    temp_db[driver_id]["bestSplits"][i] = data["bestSplits"][i]
 
         self.bot.database[results["trackName"]] = temp_db
         json.dump(self.bot.database, open("db.json", "w+"), indent=4)
